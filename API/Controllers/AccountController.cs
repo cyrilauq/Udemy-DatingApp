@@ -1,17 +1,20 @@
 using System.Security.Cryptography;
 using System.Text;
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
 public class AccountController(DataContext context) : BaseApiController
 {
     [HttpPost("register")]
-    public async Task<ActionResult<AppUser>> Register([FromBody] string username, [FromBody] string password) 
+    public async Task<ActionResult<AppUser>> Register(RegisterDto registerDto) 
     {
+        if(await UserExists(registerDto.Username)) return BadRequest("Username is taken");
         /// the "using" will release the current instance of the HMACSHA512 we're creating
         /// This means that the instance will be disposed when we'vefinished using it
         /// We can omits the "using" and let the garbage collector do it but we have no control of it and so we don't know when the disposing will be done
@@ -20,8 +23,8 @@ public class AccountController(DataContext context) : BaseApiController
 
         var user = new AppUser() 
         {
-            UserName = username,
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password)),
+            UserName = registerDto.Username.ToLower(),
+            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
             PasswordSalt = hmac.Key
         };
 
@@ -29,5 +32,9 @@ public class AccountController(DataContext context) : BaseApiController
         await context.SaveChangesAsync();
 
         return user;
+    }
+
+    private async Task<bool> UserExists(string username) {
+        return await context.Users.AnyAsync(u => u.UserName.ToLower() == username.ToLower());
     }
 }
