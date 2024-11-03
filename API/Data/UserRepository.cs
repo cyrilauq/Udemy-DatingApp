@@ -14,12 +14,16 @@ public class UserRepository(DataContext context): IUserRepository
 
     public async Task<AppUser?> GetUserByUsernameAsync(string username)
     {
-        return await context.Users.SingleOrDefaultAsync(user => user.UserName == username);
+        return await context.Users
+            .Include(u => u.Photos)
+            .SingleOrDefaultAsync(user => user.UserName == username);
     }
 
     public async Task<IEnumerable<AppUser>> GetUsersAsync()
     {
-        return await context.Users.ToListAsync();
+        return await context.Users
+            .Include(u => u.Photos)
+            .ToListAsync();
     }
 
     public async Task<bool> SaveAllAsync()
