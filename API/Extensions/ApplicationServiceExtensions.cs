@@ -25,6 +25,8 @@ public static class ApplicationServiceExtensions
         serviceCollection.AddScoped<ITokenService, TokenService>();
 
         serviceCollection.AddScoped<IUserRepository, UserRepository>();
+
+        serviceCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         
         return serviceCollection;
     }
