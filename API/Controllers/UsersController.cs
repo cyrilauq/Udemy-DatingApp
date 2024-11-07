@@ -1,15 +1,17 @@
 using System.Security.Claims;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUserRepository userRepository, IMapper mapper) : BaseApiController
+public class UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService<ImageUploadResult, DeletionResult> photoService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
@@ -32,9 +34,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper) : B
     [HttpPut]
     public async Task<ActionResult> UpdateUser(MemberUpdateDto memberUpdateDto)
     {
-        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if(username == null) return BadRequest("no username found in token");
+        var username = User.GetUsername();
 
         var user = await userRepository.GetUserByUsernameAsync(username);
 
@@ -46,5 +46,27 @@ public class UsersController(IUserRepository userRepository, IMapper mapper) : B
         mapper.Map(memberUpdateDto, user);
 
         return await userRepository.SaveAllAsync() ? NoContent() : BadRequest("Failed to update the user");
+    }
+
+    [HttpPost("add-photo")]
+    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file) 
+    {
+        var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
+
+        if(user == null) return BadRequest("Can't update user");
+
+        var result = await photoService.AddPhotoAsync(file);
+
+        if(result.HasError()) return BadRequest(result.Error.Message);
+
+        var photo = new Photo
+        {
+            Url = result.SecureUrl.AbsoluteUri,
+            PublicId = result.PublicId
+        };
+
+        user.Photos.Add(photo);
+
+        return await userRepository.SaveAllAsync() ? mapper.Map<PhotoDto>(photo) : BadRequest("Problem adding photo");
     }
 }
