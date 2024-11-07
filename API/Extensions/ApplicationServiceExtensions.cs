@@ -4,6 +4,7 @@ using API.Data;
 using API.Helpers;
 using API.Interfaces;
 using API.Services;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,13 +25,13 @@ public static class ApplicationServiceExtensions
         servicesCollection.AddCors();
 
         servicesCollection.AddScoped<ITokenService, TokenService>();
-        servicesCollection.AddScoped<PhotoService, PhotoService>();
+        servicesCollection.AddScoped<IPhotoService<ImageUploadResult, DeletionResult>, PhotoService>();
 
         servicesCollection.AddScoped<IUserRepository, UserRepository>();
 
         servicesCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-        servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
+        servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySetting"));
         
         return servicesCollection;
     }

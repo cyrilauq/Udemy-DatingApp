@@ -22,7 +22,7 @@ public class PhotoService : IPhotoService<ImageUploadResult, DeletionResult>
     {
         var uploadResult = new ImageUploadResult();
 
-        if (file.IsEmpty())
+        if (!file.IsEmpty())
         {
             using var stream = file.OpenReadStream();
             ImageUploadParams uploadParams = ComputeUploadParams(file, stream);
