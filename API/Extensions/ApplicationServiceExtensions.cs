@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using API.Data;
+using API.Helpers;
 using API.Interfaces;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,23 +12,25 @@ namespace API.Extensions;
 
 public static class ApplicationServiceExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection serviceCollection, IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection servicesCollection, IConfiguration configuration)
     {
-        serviceCollection.AddControllers();
+        servicesCollection.AddControllers();
 
-        serviceCollection.AddDbContext<DataContext>(options =>
+        servicesCollection.AddDbContext<DataContext>(options =>
         {
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
         });
 
-        serviceCollection.AddCors();
+        servicesCollection.AddCors();
 
-        serviceCollection.AddScoped<ITokenService, TokenService>();
+        servicesCollection.AddScoped<ITokenService, TokenService>();
 
-        serviceCollection.AddScoped<IUserRepository, UserRepository>();
+        servicesCollection.AddScoped<IUserRepository, UserRepository>();
 
-        serviceCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        servicesCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+        servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
         
-        return serviceCollection;
+        return servicesCollection;
     }
 }
