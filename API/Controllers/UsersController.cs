@@ -22,7 +22,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<MemberDto>> GetUserById(string username)
+    public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
         var user = await userRepository.GetMemberAsync(username);
 
@@ -38,7 +38,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
 
         var user = await userRepository.GetUserByUsernameAsync(username);
 
-        if(user == null) return BadRequest("Could not find user");
+        if (user == null) return BadRequest("Could not find user");
 
         // We're updating the "user" content
         // By doing the "map" like this, AutoMapper map the content of "memberUpdateDto" inside "user"
@@ -49,15 +49,15 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
     }
 
     [HttpPost("add-photo")]
-    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file) 
+    public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
     {
         var user = await userRepository.GetUserByUsernameAsync(User.GetUsername());
 
-        if(user == null) return BadRequest("Can't update user");
+        if (user == null) return BadRequest("Can't update user");
 
         var result = await photoService.AddPhotoAsync(file);
 
-        if(result.HasError()) return BadRequest(result.Error.Message);
+        if (result.HasError()) return BadRequest(result.Error.Message);
 
         var photo = new Photo
         {
@@ -67,6 +67,6 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
 
         user.Photos.Add(photo);
 
-        return await userRepository.SaveAllAsync() ? mapper.Map<PhotoDto>(photo) : BadRequest("Problem adding photo");
+        return await userRepository.SaveAllAsync() ? CreatedAtAction(nameof(GetUser), new { username = user.UserName }, mapper.Map<PhotoDto>(photo)) : BadRequest("Problem adding photo");
     }
 }
