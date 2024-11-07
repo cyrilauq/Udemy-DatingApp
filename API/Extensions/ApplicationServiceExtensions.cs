@@ -24,6 +24,7 @@ public static class ApplicationServiceExtensions
         servicesCollection.AddCors();
 
         servicesCollection.AddScoped<ITokenService, TokenService>();
+        servicesCollection.AddScoped<PhotoService, PhotoService>();
 
         servicesCollection.AddScoped<IUserRepository, UserRepository>();
 
