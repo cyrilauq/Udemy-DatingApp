@@ -1,33 +1,47 @@
-import { Component, inject, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, OnInit, output } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
-  selector: 'app-register',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+    selector: 'app-register',
+    standalone: true,
+    imports: [ReactiveFormsModule],
+    templateUrl: './register.component.html',
+    styleUrl: './register.component.css',
 })
-export class RegisterComponent {
-  private accountService = inject(AccountService);
-  private toastrService = inject(ToastrService);
-  cancelRegister = output<boolean>();
+export class RegisterComponent implements OnInit {
+    private accountService = inject(AccountService);
+    private toastrService = inject(ToastrService);
+    cancelRegister = output<boolean>();
+    registerForm: FormGroup = new FormGroup({});
 
-  model: any = {};
+    model: any = {};
 
-  register() {
-    this.accountService.register(this.model).subscribe({
-      next: response => {
-        console.log(response);
-        this.cancel();
-      },
-      error: ({ error }) => this.toastrService.error(error)
-    });
-  }
+    ngOnInit(): void {
+        this.initializeForm();
+    }
 
-  cancel() {
-    this.cancelRegister.emit(false);
-  }
+    initializeForm() {
+        this.registerForm = new FormGroup({
+            username: new FormControl(),
+            password: new FormControl(),
+            confirmPassword: new FormControl(),
+        });
+    }
+
+    register() {
+        console.log(this.registerForm.value);
+        // this.accountService.register(this.model).subscribe({
+        //     next: response => {
+        //         console.log(response);
+        //         this.cancel();
+        //     },
+        //     error: ({ error }) => this.toastrService.error(error),
+        // });
+    }
+
+    cancel() {
+        this.cancelRegister.emit(false);
+    }
 }
