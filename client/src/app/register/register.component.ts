@@ -9,12 +9,12 @@ import {
 } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
-import { JsonPipe } from '@angular/common';
+import { JsonPipe, NgIf } from '@angular/common';
 
 @Component({
     selector: 'app-register',
     standalone: true,
-    imports: [ReactiveFormsModule, JsonPipe],
+    imports: [ReactiveFormsModule, NgIf],
     templateUrl: './register.component.html',
     styleUrl: './register.component.css',
 })
@@ -38,17 +38,36 @@ export class RegisterComponent implements OnInit {
                 Validators.minLength(8),
                 Validators.maxLength(24),
             ]),
-            confirmPassword: new FormControl('', [Validators.required, this.matchValues('password')]),
+            confirmPassword: new FormControl('', [
+                Validators.required,
+                this.matchValues('password'),
+            ]),
         });
         this.registerForm.controls['password'].valueChanges.subscribe({
-            next: () => this.registerForm.controls['confirmPassword'].updateValueAndValidity()
-        })
+            next: () =>
+                this.registerForm.controls[
+                    'confirmPassword'
+                ].updateValueAndValidity(),
+        });
     }
 
     matchValues(matchTo: string): ValidatorFn {
         return (control: AbstractControl) => {
-            return control.value === control.parent?.get(matchTo)?.value ? null : { isMatching: true }
-        }
+            return control.value === control.parent?.get(matchTo)?.value
+                ? null
+                : { isMatching: true };
+        };
+    }
+
+    inputHasErrors(inputName: string) {
+        return (
+            this.registerForm.get(inputName)?.errors &&
+            this.registerForm.get(inputName)?.touched
+        );
+    }
+
+    inputHasSpecificError(inputName: string, errorName: string) {
+        return this.registerForm.get(inputName)?.hasError(errorName);
     }
 
     register() {

@@ -3,6 +3,7 @@
     <hr />
     <div class="mb-3 form-floating">
         <input
+            [class.is-invalid]="inputHasErrors('username')"
             formControlName="username"
             type="text"
             class="form-control"
@@ -10,9 +11,15 @@
             id="username"
             placeholder="Username" />
         <label for="username">Username</label>
+        <div
+            *ngIf="inputHasSpecificError('username', 'required')"
+            class="invalid-feedback text-start">
+            Please enter a username
+        </div>
     </div>
     <div class="mb-3 form-floating">
         <input
+            [class.is-invalid]="inputHasErrors('password')"
             formControlName="password"
             type="password"
             class="form-control"
@@ -20,9 +27,25 @@
             id="password"
             placeholder="Password" />
         <label for="password">Password</label>
+        <div
+            *ngIf="inputHasSpecificError('password', 'required')"
+            class="invalid-feedback text-start">
+            Please enter a password
+        </div>
+        <div
+            *ngIf="inputHasSpecificError('password', 'minlength')"
+            class="invalid-feedback text-start">
+            Password must be at least 8 characters
+        </div>
+        <div
+            *ngIf="inputHasSpecificError('password', 'maxlength')"
+            class="invalid-feedback text-start">
+            Password must be at most 24 characters
+        </div>
     </div>
     <div class="mb-3 form-floating">
         <input
+            [class.is-invalid]="inputHasErrors('confirmPassword')"
             formControlName="confirmPassword"
             type="password"
             class="form-control"
@@ -30,6 +53,16 @@
             id="confirmPassword"
             placeholder="Confirm password" />
         <label for="confirmPassword">Confirm password</label>
+        <div
+            *ngIf="inputHasSpecificError('confirmPassword', 'required')"
+            class="invalid-feedback text-start">
+            Please enter a confirm password
+        </div>
+        <div
+            *ngIf="inputHasSpecificError('confirmPassword', 'isMatching')"
+            class="invalid-feedback text-start">
+            The confirm password mustmatch the password
+        </div>
     </div>
     <div class="form-group text-center">
         <button class="btn btn-success me-2" type="submit">Register</button>
