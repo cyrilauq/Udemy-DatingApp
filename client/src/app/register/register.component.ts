@@ -1,8 +1,10 @@
 import { Component, inject, OnInit, output } from '@angular/core';
 import {
+    AbstractControl,
     FormControl,
     FormGroup,
     ReactiveFormsModule,
+    ValidatorFn,
     Validators,
 } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
@@ -36,8 +38,17 @@ export class RegisterComponent implements OnInit {
                 Validators.minLength(8),
                 Validators.maxLength(24),
             ]),
-            confirmPassword: new FormControl('', [Validators.required]),
+            confirmPassword: new FormControl('', [Validators.required, this.matchValues('password')]),
         });
+        this.registerForm.controls['password'].valueChanges.subscribe({
+            next: () => this.registerForm.controls['confirmPassword'].updateValueAndValidity()
+        })
+    }
+
+    matchValues(matchTo: string): ValidatorFn {
+        return (control: AbstractControl) => {
+            return control.value === control.parent?.get(matchTo)?.value ? null : { isMatching: true }
+        }
     }
 
     register() {
