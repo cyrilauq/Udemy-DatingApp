@@ -1,69 +1,17 @@
 <form [formGroup]="registerForm" (ngSubmit)="register()">
     <h2 class="text-center text-primary">Sign up</h2>
     <hr />
-    <div class="mb-3 form-floating">
-        <input
-            [class.is-invalid]="inputHasErrors('username')"
-            formControlName="username"
-            type="text"
-            class="form-control"
-            name="password"
-            id="username"
-            placeholder="Username" />
-        <label for="username">Username</label>
-        <div
-            *ngIf="inputHasSpecificError('username', 'required')"
-            class="invalid-feedback text-start">
-            Please enter a username
-        </div>
-    </div>
-    <div class="mb-3 form-floating">
-        <input
-            [class.is-invalid]="inputHasErrors('password')"
-            formControlName="password"
-            type="password"
-            class="form-control"
-            name="password"
-            id="password"
-            placeholder="Password" />
-        <label for="password">Password</label>
-        <div
-            *ngIf="inputHasSpecificError('password', 'required')"
-            class="invalid-feedback text-start">
-            Please enter a password
-        </div>
-        <div
-            *ngIf="inputHasSpecificError('password', 'minlength')"
-            class="invalid-feedback text-start">
-            Password must be at least 8 characters
-        </div>
-        <div
-            *ngIf="inputHasSpecificError('password', 'maxlength')"
-            class="invalid-feedback text-start">
-            Password must be at most 24 characters
-        </div>
-    </div>
-    <div class="mb-3 form-floating">
-        <input
-            [class.is-invalid]="inputHasErrors('confirmPassword')"
-            formControlName="confirmPassword"
-            type="password"
-            class="form-control"
-            name="confirmPassword"
-            id="confirmPassword"
-            placeholder="Confirm password" />
-        <label for="confirmPassword">Confirm password</label>
-        <div
-            *ngIf="inputHasSpecificError('confirmPassword', 'required')"
-            class="invalid-feedback text-start">
-            Please enter a confirm password
-        </div>
-        <div
-            *ngIf="inputHasSpecificError('confirmPassword', 'isMatching')"
-            class="invalid-feedback text-start">
-            The confirm password mustmatch the password
-        </div>
-    </div>
+    <app-text-input
+        [formControl]="$any(registerForm.controls['username'])"
+        [label]="'Username'"></app-text-input>
+    <app-text-input
+        [formControl]="$any(registerForm.controls['password'])"
+        [label]="'Password'"
+        [type]="'password'"></app-text-input>
+    <app-text-input
+        [formControl]="$any(registerForm.controls['confirmPassword'])"
+        [label]="'Confirm password'"
+        [type]="'password'"></app-text-input>
     <div class="form-group text-center">
         <button class="btn btn-success me-2" type="submit">Register</button>
         <button class="btn btn-default me-2" (click)="cancel()" type="button">
