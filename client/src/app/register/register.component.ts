@@ -34,8 +34,23 @@ export class RegisterComponent implements OnInit {
     }
 
     initializeForm() {
-        this.registerForm = this.formBuilderService.group({
+        this.registerForm = this.computeFormGroup();
+        this.registerForm.controls['password'].valueChanges.subscribe({
+            next: () =>
+                this.registerForm.controls[
+                    'confirmPassword'
+                ].updateValueAndValidity(),
+        });
+    }
+
+    private computeFormGroup(): FormGroup<any> {
+        return this.formBuilderService.group({
+            gender: ['male'],
             username: ['', Validators.required],
+            knownAs: ['', Validators.required],
+            dateOfBirth: ['', Validators.required],
+            city: ['', Validators.required],
+            country: ['', Validators.required],
             password: [
                 '',
                 [
@@ -49,12 +64,6 @@ export class RegisterComponent implements OnInit {
                 [Validators.required, this.matchValues('password')],
             ],
         });
-        this.registerForm.controls['password'].valueChanges.subscribe({
-            next: () =>
-                this.registerForm.controls[
-                    'confirmPassword'
-                ].updateValueAndValidity(),
-        });
     }
 
     matchValues(matchTo: string): ValidatorFn {
@@ -66,6 +75,7 @@ export class RegisterComponent implements OnInit {
     }
 
     register() {
+        console.log(this.registerForm.value);
         // this.accountService.register(this.model).subscribe({
         //     next: response => {
         //         console.log(response);
