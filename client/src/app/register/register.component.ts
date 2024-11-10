@@ -11,6 +11,7 @@ import { AccountService } from '../_services/account.service';
 import { ToastrService } from 'ngx-toastr';
 import { TextInputComponent } from '../_forms/text-input/text-input.component';
 import { DatePickerComponent } from '../_forms/date-picker/date-picker.component';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-register',
@@ -21,17 +22,17 @@ import { DatePickerComponent } from '../_forms/date-picker/date-picker.component
 })
 export class RegisterComponent implements OnInit {
     private accountService = inject(AccountService);
-    private toastrService = inject(ToastrService);
     private formBuilderService = inject(FormBuilder);
+    private router = inject(Router);
+
     cancelRegister = output<boolean>();
     registerForm: FormGroup = new FormGroup({});
     maxDate = new Date();
-
-    model: any = {};
+    validationErrors: string[] | undefined;
 
     ngOnInit(): void {
         this.initializeForm();
-        this.maxDate.setFullYear(this.maxDate.getFullYear() - 18)
+        this.maxDate.setFullYear(this.maxDate.getFullYear() - 18);
     }
 
     initializeForm() {
@@ -76,17 +77,21 @@ export class RegisterComponent implements OnInit {
     }
 
     register() {
-        console.log(this.registerForm.value);
-        // this.accountService.register(this.model).subscribe({
-        //     next: response => {
-        //         console.log(response);
-        //         this.cancel();
-        //     },
-        //     error: ({ error }) => this.toastrService.error(error),
-        // });
+        const dob = this.getDateOnly(
+            this.registerForm.get('dateOfBirth')?.value,
+        );
+        this.registerForm.value.dateOfBirth = dob;
+        this.accountService.register(this.registerForm.value).subscribe({
+            next: _ => this.router.navigateByUrl('/members'),
+            error: error => (this.validationErrors = error),
+        });
     }
 
     cancel() {
         this.cancelRegister.emit(false);
+    }
+
+    private getDateOnly(dob: string | undefined): string {
+        return dob ? new Date(dob).toISOString().slice(0, 10) : '';
     }
 }

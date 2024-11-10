@@ -36,11 +36,7 @@ export class PhotoEditorComponent implements OnInit {
     setMainPhoto(photo: Photo) {
         this.membersService.setMainPhoto(photo).subscribe({
             next: _ => {
-                const user = this.accountService.currentUser();
-                if (user) {
-                    user.photoUrl = photo.url;
-                    this.accountService.setCurrentUser(user);
-                }
+                this.updateUserMainPhotoUrl(photo.url);
                 const updatedMember: Member = {
                     ...this.member(),
                     photoUrl: photo.url,
@@ -58,10 +54,12 @@ export class PhotoEditorComponent implements OnInit {
         this.membersService.deletePhoto(photo).subscribe({
             next: _ => {
                 const updatedMember = { ...this.member() };
-                updatedMember.photos = updatedMember.photos.filter(p => p.id !== photo.id)
+                updatedMember.photos = updatedMember.photos.filter(
+                    p => p.id !== photo.id,
+                );
                 this.memberChange.emit(updatedMember);
-            }
-        })
+            },
+        });
     }
 
     initializeUploader() {
@@ -84,6 +82,23 @@ export class PhotoEditorComponent implements OnInit {
             const updatedMember = { ...this.member() };
             updatedMember.photos.push(photo);
             this.memberChange.emit(updatedMember);
+            if (photo.isMain) {
+                this.updateUserMainPhotoUrl(photo.url);
+                updatedMember.photoUrl = photo.url;
+                updatedMember.photos.forEach(p => {
+                    if (p.isMain) p.isMain = false;
+                    if (p.id === photo.id) p.isMain = true;
+                });
+                this.memberChange.emit(updatedMember);
+            }
         };
+    }
+
+    private updateUserMainPhotoUrl(photoUrl: string) {
+        const user = this.accountService.currentUser();
+        if (user) {
+            user.photoUrl = photoUrl;
+            this.accountService.setCurrentUser(user);
+        }
     }
 }
