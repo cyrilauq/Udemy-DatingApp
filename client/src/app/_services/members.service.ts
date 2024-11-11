@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Member } from '../_models/member';
@@ -12,23 +12,28 @@ import { PaginatedResult } from '../_models/pagination';
 export class MembersService {
     private http = inject(HttpClient);
     baseUrl = environment.apiUrl;
-    // members = signal<Member[]>([]);
-    paginatedresult = signal<PaginatedResult<Member[]> | null>(null)
+    paginatedResult = signal<PaginatedResult<Member[]> | null>(null)
 
     getMembers(pageNumber?: number, pageSize?: number) {
         let params = this.getHttpPageParams(pageNumber, pageSize);
         
-
-        if (!this.paginatedresult()) {
+        if (!this.paginatedResult() || this.hasPaginationInfoChanged(pageNumber, pageSize)) {
             this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
-                next: response => 
-                    this.paginatedresult.set({
-                        items: response.body ?? [],
-                        pagination: JSON.parse(response.headers.get('Pagination')!!)
-                    }),
+                next: response => this.setPaginationResultFromHttpResponse(response),
             });
         }
-        return this.paginatedresult();
+        return this.paginatedResult();
+    }
+
+    private hasPaginationInfoChanged(newPageNumber: number | undefined, newPageSize: number | undefined) {
+        return this.paginatedResult()?.pagination?.currentPage != newPageNumber || this.paginatedResult()?.pagination?.itemsPerPage != newPageSize;
+    }
+
+    private setPaginationResultFromHttpResponse(response: HttpResponse<Member[]>): void {
+        return this.paginatedResult.set({
+            items: response.body ?? [],
+            pagination: JSON.parse(response.headers.get('Pagination')!!)
+        });
     }
 
     private getHttpPageParams(pageNumber: number | undefined, pageSize: number | undefined) {
