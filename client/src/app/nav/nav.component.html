@@ -57,7 +57,7 @@
                     dropdownToggle
                     class="dropdown-toggle text-light text-decoration-none"
                     >Welcome
-                    {{ accountService.currentUser()?.username | titlecase }}</a
+                    {{ accountService.currentUser()?.knownAs | titlecase }}</a
                 >
                 <div *dropdownMenu class="dropdown-menu">
                     <a routerLink="member/edit" class="dropdown-item"

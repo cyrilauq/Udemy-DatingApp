@@ -2,9 +2,9 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Member } from '../_models/member';
-import { of, tap } from 'rxjs';
 import { Photo } from '../_models/photo';
 import { PaginatedResult } from '../_models/pagination';
+import { UserParams } from '../_models/userParams';
 
 @Injectable({
     providedIn: 'root',
@@ -14,15 +14,22 @@ export class MembersService {
     baseUrl = environment.apiUrl;
     paginatedResult = signal<PaginatedResult<Member[]> | null>(null)
 
-    getMembers(pageNumber?: number, pageSize?: number) {
-        let params = this.getHttpPageParams(pageNumber, pageSize);
+    getMembers(userParams: UserParams) {
+        let params = this.setHttpParams(userParams);
         
-        if (!this.paginatedResult() || this.hasPaginationInfoChanged(pageNumber, pageSize)) {
+        if (!this.paginatedResult() || this.hasPaginationInfoChanged(userParams.pageNumber, userParams.pageSize)) {
             this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
                 next: response => this.setPaginationResultFromHttpResponse(response),
             });
         }
         return this.paginatedResult();
+    }
+
+    private setHttpParams(userParams: UserParams) {
+        let params = this.setHttpPaginationParams(new HttpParams(), userParams.pageNumber, userParams.pageSize);
+        params = this.setHttpAgeParams(params, userParams.minAge, userParams.maxAge);
+        params = params.append('gender', userParams.gender);
+        return params;
     }
 
     private hasPaginationInfoChanged(newPageNumber: number | undefined, newPageSize: number | undefined) {
@@ -36,8 +43,15 @@ export class MembersService {
         });
     }
 
-    private getHttpPageParams(pageNumber: number | undefined, pageSize: number | undefined) {
-        let params = new HttpParams();
+    private setHttpAgeParams(httpParams: HttpParams, minAge: number, maxAge: number) {
+        let params = httpParams;
+        params = params.append('minAge', minAge);
+        params = params.append('maxAge', maxAge);
+        return params;
+    }
+
+    private setHttpPaginationParams(httpParams: HttpParams, pageNumber: number | undefined, pageSize: number | undefined) {
+        let params = httpParams;
         if (pageNumber && pageSize) {
             params = params.append('pageNumber', pageNumber);
             params = params.append('pageSize', pageSize);
