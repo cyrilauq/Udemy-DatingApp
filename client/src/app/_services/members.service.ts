@@ -29,6 +29,7 @@ export class MembersService {
         let params = this.setHttpPaginationParams(new HttpParams(), userParams.pageNumber, userParams.pageSize);
         params = this.setHttpAgeParams(params, userParams.minAge, userParams.maxAge);
         params = params.append('gender', userParams.gender);
+        params = params.append('orderBy', userParams.orderBy);
         return params;
     }
 
