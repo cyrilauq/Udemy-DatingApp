@@ -27,8 +27,19 @@ public class UserRepository(DataContext context, IMapper mapper): IUserRepositor
         if (userParams.Gender != null) query = query.Where(u => u.Gender.Equals(userParams.Gender));
 
         query = FilterQueryByAges(query, userParams.MinAge, userParams.MaxAge);
+        query = OrderQueryWithUserParams(query, userParams);
 
         return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(mapper.ConfigurationProvider), userParams.PageNumber, userParams.PageSize);
+    }
+
+    private static IQueryable<AppUser> OrderQueryWithUserParams(IQueryable<AppUser> query, UserParams userParams)
+    {
+        query = userParams.OrderBy switch
+        {
+            "created" => query.OrderByDescending(u => u.Created),
+            _ => query.OrderByDescending(u => u.LastActive)
+        };
+        return query;
     }
 
     private static IQueryable<AppUser> FilterQueryByAges(IQueryable<AppUser> query, int minAge, int maxAge)
