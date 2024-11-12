@@ -29,6 +29,8 @@ public static class ApplicationServiceExtensions
 
         servicesCollection.AddScoped<IUserRepository, UserRepository>();
 
+        servicesCollection.AddScoped<LogUserAcivity>();
+
         servicesCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySetting"));
