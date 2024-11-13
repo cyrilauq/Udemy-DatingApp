@@ -5,6 +5,7 @@ import { Member } from '../_models/member';
 import { Photo } from '../_models/photo';
 import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
+import { of } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -16,8 +17,10 @@ export class MembersService {
     memberCache = new Map<string, HttpResponse<Member[]>>();
 
     getMembers(userParams: UserParams) {
-        const paramsKey = Object.values(userParams).join('-');
+        const paramsKey = this.computeUniqueIdFromParams(userParams);
         const cachedResponse = this.memberCache.get(paramsKey);
+        console.log(userParams);
+        
         if(cachedResponse) {
             this.setPaginationResultFromHttpResponse(cachedResponse);
         } else {
@@ -33,6 +36,10 @@ export class MembersService {
             }
         }
         return this.paginatedResult();
+    }
+
+    private computeUniqueIdFromParams(userParams: UserParams) {
+        return Object.values(userParams).join('-');
     }
 
     private setHttpParams(userParams: UserParams) {
@@ -71,9 +78,15 @@ export class MembersService {
     }
 
     getMember(username: string) {
-        // const localMember = this.members().find(m => m.username === username);
-        // if (localMember) return of(localMember);
+        const memberFromCache = this.findMemberFromCache(username);
+        if (memberFromCache) return of(memberFromCache);
         return this.http.get<Member>(`${this.baseUrl}users/${username}`);
+    }
+
+    private findMemberFromCache(username: string) {
+        return [...this.memberCache.values()]
+            .reduce((arr, elem) => elem.body ? arr.concat(elem.body) : arr, new Array<Member>(0))
+            .find(m => m.username === username)
     }
 
     updateMember(member: Member) {
