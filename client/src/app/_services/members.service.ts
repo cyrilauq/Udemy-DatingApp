@@ -12,15 +12,25 @@ import { UserParams } from '../_models/userParams';
 export class MembersService {
     private http = inject(HttpClient);
     baseUrl = environment.apiUrl;
-    paginatedResult = signal<PaginatedResult<Member[]> | null>(null)
+    paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
+    memberCache = new Map<string, HttpResponse<Member[]>>();
 
     getMembers(userParams: UserParams) {
-        let params = this.setHttpParams(userParams);
-        
-        if (!this.paginatedResult() || this.hasPaginationInfoChanged(userParams.pageNumber, userParams.pageSize)) {
-            this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
-                next: response => this.setPaginationResultFromHttpResponse(response),
-            });
+        const paramsKey = Object.values(userParams).join('-');
+        const cachedResponse = this.memberCache.get(paramsKey);
+        if(cachedResponse) {
+            this.setPaginationResultFromHttpResponse(cachedResponse);
+        } else {
+            let params = this.setHttpParams(userParams);
+            
+            if (!this.paginatedResult() || this.hasPaginationInfoChanged(userParams.pageNumber, userParams.pageSize)) {
+                this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
+                    next: response => {
+                        this.memberCache.set(paramsKey, response);
+                        this.setPaginationResultFromHttpResponse(response);
+                    },
+                });
+            }
         }
         return this.paginatedResult();
     }
