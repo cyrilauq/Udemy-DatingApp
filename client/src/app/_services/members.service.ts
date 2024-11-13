@@ -6,27 +6,34 @@ import { Photo } from '../_models/photo';
 import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
 import { of } from 'rxjs';
+import { AccountService } from './account.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class MembersService {
     private http = inject(HttpClient);
+    private accountService = inject(AccountService);
     baseUrl = environment.apiUrl;
     paginatedResult = signal<PaginatedResult<Member[]> | null>(null);
     memberCache = new Map<string, HttpResponse<Member[]>>();
+    userParams = signal<UserParams>(new UserParams(this.accountService.currentUser()))
 
-    getMembers(userParams: UserParams) {
-        const paramsKey = this.computeUniqueIdFromParams(userParams);
+    resetUserParams() {
+        this.userParams.set(new UserParams(this.accountService.currentUser()))
+    }
+
+    getMembers() {
+        const paramsKey = this.computeUniqueIdFromParams(this.userParams());
         const cachedResponse = this.memberCache.get(paramsKey);
-        console.log(userParams);
+        console.log(this.userParams());
         
         if(cachedResponse) {
             this.setPaginationResultFromHttpResponse(cachedResponse);
         } else {
-            let params = this.setHttpParams(userParams);
+            let params = this.setHttpParams(this.userParams());
             
-            if (!this.paginatedResult() || this.hasPaginationInfoChanged(userParams.pageNumber, userParams.pageSize)) {
+            if (!this.paginatedResult() || this.hasPaginationInfoChanged(this.userParams().pageNumber, this.userParams().pageSize)) {
                 this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
                     next: response => {
                         this.memberCache.set(paramsKey, response);
