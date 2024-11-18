@@ -1,1 +1,26 @@
-<p>lists works!</p>
+<div class="text-center mt-3">
+    <h2>{{ getTitle() }}</h2>
+</div>
+
+<div class="container mt-3">
+    <div class="d-flex">
+        <div class="btn-group">
+            @for (option of buttonOptions; track option.value) {
+                <button
+                    class="btn btn-primary"
+                    [btnRadio]="option.value"
+                    [(ngModel)]="predicate"
+                    (click)="loadLikes()">
+                    {{ option.title }}
+                </button>
+            }
+        </div>
+    </div>
+    <div class="row mt-3">
+        @for (member of members; track member.id) {
+            <div class="col-2">
+                <app-member-card [member]="member"></app-member-card>
+            </div>
+        }
+    </div>
+</div>

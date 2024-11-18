@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
+import { Member } from '../_models/member';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ export class LikesService {
   }
 
   getLikes(predicate: string) {
-    return this.http.get(`${this.baseUrl}list/predicate=${predicate}`);
+    return this.http.get<Member[]>(`${this.baseUrl}likes?predicate=${predicate}`);
   }
 
   getLikeIds() {
