@@ -10,6 +10,6 @@ public interface ILikesRepository
     Task<IEnumerable<MemberDto>> GetUserLikes(string predicate, int userId);
     Task<IEnumerable<int>> GetCurrentUserLikeIds(int currentUserId);
     void DeleteLike(UserLike like);
-    void addLike(UserLike like);
+    void AddLike(UserLike like);
     Task<bool> SaveChanges();
 }

@@ -10,7 +10,7 @@ namespace API.Data;
 
 public class LikesRepository(DataContext context, IMapper mapper) : ILikesRepository
 {
-    public void addLike(UserLike like)
+    public void AddLike(UserLike like)
     {
         context.Likes.Add(like);
     }
