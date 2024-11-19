@@ -7,6 +7,7 @@ import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
 import { of } from 'rxjs';
 import { AccountService } from './account.service';
+import { setPaginationResultFromHttpResponse, setHttpPaginationParams } from './paginationHelper';
 
 @Injectable({
     providedIn: 'root',
@@ -29,7 +30,7 @@ export class MembersService {
         console.log(this.userParams());
         
         if(cachedResponse) {
-            this.setPaginationResultFromHttpResponse(cachedResponse);
+            setPaginationResultFromHttpResponse(cachedResponse, this.paginatedResult);
         } else {
             let params = this.setHttpParams(this.userParams());
             
@@ -37,7 +38,7 @@ export class MembersService {
                 this.http.get<Member[]>(`${this.baseUrl}users`, { observe: 'response', params }).subscribe({
                     next: response => {
                         this.memberCache.set(paramsKey, response);
-                        this.setPaginationResultFromHttpResponse(response);
+                        setPaginationResultFromHttpResponse(response, this.paginatedResult);
                     },
                 });
             }
@@ -50,7 +51,7 @@ export class MembersService {
     }
 
     private setHttpParams(userParams: UserParams) {
-        let params = this.setHttpPaginationParams(new HttpParams(), userParams.pageNumber, userParams.pageSize);
+        let params = setHttpPaginationParams(new HttpParams(), userParams.pageNumber, userParams.pageSize);
         params = this.setHttpAgeParams(params, userParams.minAge, userParams.maxAge);
         params = params.append('gender', userParams.gender);
         params = params.append('orderBy', userParams.orderBy);
@@ -61,26 +62,10 @@ export class MembersService {
         return this.paginatedResult()?.pagination?.currentPage != newPageNumber || this.paginatedResult()?.pagination?.itemsPerPage != newPageSize;
     }
 
-    private setPaginationResultFromHttpResponse(response: HttpResponse<Member[]>): void {
-        return this.paginatedResult.set({
-            items: response.body ?? [],
-            pagination: JSON.parse(response.headers.get('Pagination')!!)
-        });
-    }
-
     private setHttpAgeParams(httpParams: HttpParams, minAge: number, maxAge: number) {
         let params = httpParams;
         params = params.append('minAge', minAge);
         params = params.append('maxAge', maxAge);
-        return params;
-    }
-
-    private setHttpPaginationParams(httpParams: HttpParams, pageNumber: number | undefined, pageSize: number | undefined) {
-        let params = httpParams;
-        if (pageNumber && pageSize) {
-            params = params.append('pageNumber', pageNumber);
-            params = params.append('pageSize', pageSize);
-        }
         return params;
     }
 
