@@ -7,11 +7,12 @@ import { GalleryItem, GalleryModule, ImageItem } from 'ng-gallery';
 import { Photo } from '../../_models/photo';
 import { TimeagoModule } from 'ngx-timeago';
 import { DatePipe } from '@angular/common';
+import { MemberMessagesComponent } from "../member-messages/member-messages.component";
 
 @Component({
   selector: 'app-member-detail',
   standalone: true,
-  imports: [TabsModule, GalleryModule, TimeagoModule, DatePipe],
+  imports: [TabsModule, GalleryModule, TimeagoModule, DatePipe, MemberMessagesComponent],
   templateUrl: './member-detail.component.html',
   styleUrl: './member-detail.component.css',
 })

@@ -3,7 +3,10 @@ import { environment } from '../../environments/environment';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PaginatedResult } from '../_models/pagination';
 import { Message } from '../_models/message';
-import { setHttpPaginationParams, setPaginationResultFromHttpResponse } from './paginationHelper';
+import {
+    setHttpPaginationParams,
+    setPaginationResultFromHttpResponse,
+} from './paginationHelper';
 
 @Injectable({
     providedIn: 'root',
@@ -15,12 +18,30 @@ export class MessageService {
     paginatedResult = signal<PaginatedResult<Message[]> | null>(null);
 
     getMessages(pageNumber: number, pageSize: number, container: string) {
-        let params = setHttpPaginationParams(new HttpParams(), pageNumber, pageSize);
+        let params = setHttpPaginationParams(
+            new HttpParams(),
+            pageNumber,
+            pageSize,
+        );
 
         params = params.append('Container', container);
 
-        return this.http.get<Message[]>(`${this.baseUrl}messages`, { observe: 'response', params }).subscribe({
-            next: response => setPaginationResultFromHttpResponse(response, this.paginatedResult)
-        })
+        return this.http
+            .get<
+                Message[]
+            >(`${this.baseUrl}messages`, { observe: 'response', params })
+            .subscribe({
+                next: response =>
+                    setPaginationResultFromHttpResponse(
+                        response,
+                        this.paginatedResult,
+                    ),
+            });
+    }
+
+    getMessageThread(username: string) {
+        return this.http.get<Message[]>(
+            `${this.baseUrl}messages/thread/${username}`,
+        );
     }
 }
