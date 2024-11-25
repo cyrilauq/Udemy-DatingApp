@@ -19,25 +19,32 @@ import { MessageService } from '../../_services/message.service';
     styleUrl: './member-detail.component.css',
 })
 export class MemberDetailComponent implements OnInit {
-    @ViewChild('memberTabs') memberTabs?: TabsetComponent;
+    @ViewChild('memberTabs', { static: true }) memberTabs?: TabsetComponent;
 
     private memberService = inject(MembersService);
     private messageService = inject(MessageService);
     private route = inject(ActivatedRoute); // Inject a service that will help us interact with the current route
 
-    member?: Member;
+    member: Member = {} as Member;
     images: GalleryItem[] = [];
     activeTab?: TabDirective;
     messages: Message[] = [];
 
     ngOnInit(): void {
-        this.loadMember();
+        this.route.data.subscribe({
+            next: data => {
+                this.member = data['member']
+                console.log(data);
+                
+                if(this.member) this.images = this.member.photos.map(p => this.photoToImage(p));
+            }
+        });
 
         this.route.queryParams.subscribe({
             next: params => {
                 params['tab'] && this.selectTab(params['tab'])
             }
-        })
+        });
     }
 
     selectTab(tabHeader: string) {
@@ -57,17 +64,6 @@ export class MemberDetailComponent implements OnInit {
     loadMessages() {
         this.messageService.getMessageThread(this.member!.username).subscribe({
             next: messages => (this.messages = messages),
-        });
-    }
-
-    loadMember() {
-        const username = this.route.snapshot.paramMap.get('username');
-        if (!username) return;
-        this.memberService.getMember(username).subscribe({
-            next: member => {
-                this.member = member;
-                this.images = member.photos.map(p => this.photoToImage(p));
-            },
         });
     }
 
