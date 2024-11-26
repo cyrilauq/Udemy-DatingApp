@@ -10,7 +10,13 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 @Component({
     selector: 'app-messages',
     standalone: true,
-    imports: [ButtonsModule, FormsModule, TimeagoModule, RouterLink, PaginationModule],
+    imports: [
+        ButtonsModule,
+        FormsModule,
+        TimeagoModule,
+        RouterLink,
+        PaginationModule,
+    ],
     templateUrl: './messages.component.html',
     styleUrl: './messages.component.css',
 })
@@ -19,6 +25,7 @@ export class MessagesComponent implements OnInit {
     container = 'Inbox';
     pageNumber = 1;
     pageSize = 5;
+    isOutbox = this.container === 'Outbox';
 
     ngOnInit(): void {
         this.loadMessages();
@@ -39,37 +46,25 @@ export class MessagesComponent implements OnInit {
         }
     }
 
-    getUserPhotoUrl(message: Message, isSender: boolean) {
-        if (isSender) {
-            return (
-                (this.container === 'Outbox'
-                    ? message.recipientPhotoUrl
-                    : message.senderPhotoUrl) ?? './assets/user. png'
-            );
-        }
+    getUserPhotoUrl(message: Message) {
         return (
-            (this.container === 'Outbox'
+            (this.isOutbox
                 ? message.recipientPhotoUrl
                 : message.senderPhotoUrl) ?? './assets/user. png'
         );
     }
 
-    getUserName(message: Message, isSender: boolean) {
-        if (isSender) {
-            return (
-                (this.container === 'Outbox'
-                    ? message.recipientUsername
-                    : message.senderUsername) ?? './assets/user. png'
-            );
-        }
+    getUserName(message: Message) {
         return (
-            (this.container === 'Outbox'
+            (this.isOutbox
                 ? message.recipientUsername
                 : message.senderUsername) ?? './assets/user. png'
         );
     }
 
     getRoute(message: Message) {
-        return this.container === 'Outbox' ? `/members/${message.recipientUsername}` : `/members/${message.senderUsername}`;
+        return this.isOutbox
+            ? `/members/${message.recipientUsername}`
+            : `/members/${message.senderUsername}`;
     }
 }

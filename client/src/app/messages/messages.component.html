@@ -45,10 +45,10 @@
                 <td>
                     <div>
                         <img
-                            [src]="getUserPhotoUrl(message, true)"
-                            [alt]="getUserName(message, true)"
+                            [src]="getUserPhotoUrl(message)"
+                            [alt]="getUserName(message)"
                             class="rounded-circle mt-2" />
-                        <strong>{{ getUserName(message, true) }}</strong>
+                        <strong>{{ getUserName(message) }}</strong>
                     </div>
                 </td>
                 <td>{{ message.messageSent | timeago }}</td>
@@ -65,7 +65,7 @@
 </table>
 
 
-@if (messagesService.paginatedResult()?.pagination) {
+@if (messagesService.paginatedResult()?.pagination && messagesService.paginatedResult()?.pagination!.totalItems > 0) {
     <div class="d-flex justify-content-center">
         <pagination
             [boundaryLinks]="true"
