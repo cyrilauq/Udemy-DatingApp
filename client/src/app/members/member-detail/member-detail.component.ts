@@ -47,6 +47,10 @@ export class MemberDetailComponent implements OnInit {
         });
     }
 
+    onUpdateMessage(message: Message) {
+        this.messages.push(message);
+    }
+
     selectTab(tabHeader: string) {
         if(this.memberTabs) {
             const messageTab = this.memberTabs.tabs.find(t => t.heading === tabHeader);

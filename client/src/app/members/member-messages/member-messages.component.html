@@ -8,7 +8,13 @@
                     <li>
                         <div>
                             <span class="chat-img float-end">
-                                <img src="{{ message.senderPhotoUrl || './assets/user.png' }}" alt="Image of message sender" class="rounded-circle" />
+                                <img
+                                    src="{{
+                                        message.senderPhotoUrl ||
+                                            './assets/user.png'
+                                    }}"
+                                    alt="Image of message sender"
+                                    class="rounded-circle" />
                             </span>
                             <div class="chat-body">
                                 <div class="header">
@@ -16,11 +22,26 @@
                                         <span class="fa fa-clock-0">
                                             {{ message.messageSent | timeago }}
                                         </span>
-                                        @if (!message.dateRead && message.senderUsername !== username()) {
-                                            <span class="text-danger">(unread)</span>
+                                        @if (
+                                            !message.dateRead &&
+                                            message.senderUsername !==
+                                                username()
+                                        ) {
+                                            <span class="text-danger"
+                                                >(unread)</span
+                                            >
                                         }
-                                        @if (message.dateRead && message.senderUsername !== username()) {
-                                            <span class="text-success">(read {{ message.dateRead | timeago }})</span>
+                                        @if (
+                                            message.dateRead &&
+                                            message.senderUsername !==
+                                                username()
+                                        ) {
+                                            <span class="text-success"
+                                                >(read
+                                                {{
+                                                    message.dateRead | timeago
+                                                }})</span
+                                            >
                                         }
                                     </small>
                                 </div>
@@ -33,11 +54,23 @@
         }
     </div>
     <div class="card-footer">
-        <form>
+        <form #messageForm="ngForm" (submit)="sendMessage()">
             <div class="input-group">
-                <input type="text" name="message_text" id="message_text" class="form-control input-sm" placeholder="Send a private message" />
+                <input
+                    type="text"
+                    name="messageContent"
+                    required
+                    [(ngModel)]="messageContent"
+                    id="messageContent"
+                    class="form-control input-sm"
+                    placeholder="Send a private message" />
                 <div class="input-group-append">
-                    <button class="btn btn-primary" type="submit">Send</button>
+                    <button
+                        [disabled]="!messageForm.valid"
+                        class="btn btn-primary"
+                        type="submit">
+                        Send
+                    </button>
                 </div>
             </div>
         </form>
