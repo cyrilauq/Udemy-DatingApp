@@ -6,28 +6,24 @@ using API.Entities;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(DataContext context, ITokenService tokenService, IMapper mapper) : BaseApiController
+public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, IMapper mapper) : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
         if (await UserExists(registerDto.Username)) return BadRequest("Username is taken");
-
-        /// the "using" will release the current instance of the HMACSHA512 we're creating
-        /// This means that the instance will be disposed when we'vefinished using it
-        /// We can omits the "using" and let the garbage collector do it but we have no control of it and so we don't know when the disposing will be done
-        /// The usage of "using" is a better solution
         var user = mapper.Map<AppUser>(registerDto);
         
-        context.Users.Add(user);
-        await context.SaveChangesAsync();
+        var result = await userManager.CreateAsync(user, registerDto.Password);
 
-        
+        if(!result.Succeeded) return BadRequest(result.Errors);
+
         if (user.UserName is null) return BadRequest("No username found for the user");
 
         return new UserDto
@@ -42,9 +38,13 @@ public class AccountController(DataContext context, ITokenService tokenService, 
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = await context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.UserName == loginDto.Username.ToLower());
+        var user = await userManager.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.NormalizedUserName == loginDto.Username.ToUpper());
 
         if (user is null || user.UserName is null) return Unauthorized("Invalid username");
+
+        var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
+
+        if(!result) return Unauthorized();
 
         return new UserDto
         {
@@ -58,6 +58,6 @@ public class AccountController(DataContext context, ITokenService tokenService, 
 
     private async Task<bool> UserExists(string username)
     {
-        return await context.Users.AnyAsync(u => u.NormalizedUserName == username.ToUpper());
+        return await userManager.Users.AnyAsync(u => u.NormalizedUserName == username.ToUpper());
     }
 }

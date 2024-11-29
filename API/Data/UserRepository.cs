@@ -28,7 +28,7 @@ public class UserRepository(DataContext context, IMapper mapper): IUserRepositor
 
         query = FilterQueryByAges(query, userParams.MinAge, userParams.MaxAge);
         query = OrderQueryWithUserParams(query, userParams);
-
+ 
         return await PagedList<MemberDto>.CreateAsync(query.ProjectTo<MemberDto>(mapper.ConfigurationProvider), userParams.PageNumber, userParams.PageSize);
     }
 
