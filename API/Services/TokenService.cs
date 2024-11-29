@@ -21,6 +21,8 @@ public class TokenService(IConfiguration config) : ITokenService
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)); // this means that the same key will be used to encrypt and decrypt
 
+        if(user.UserName is null) throw new Exception("No username found for user");
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),

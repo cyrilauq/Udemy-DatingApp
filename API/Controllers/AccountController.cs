@@ -22,16 +22,13 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         /// This means that the instance will be disposed when we'vefinished using it
         /// We can omits the "using" and let the garbage collector do it but we have no control of it and so we don't know when the disposing will be done
         /// The usage of "using" is a better solution
-        using var hmac = new HMACSHA512();
-
         var user = mapper.Map<AppUser>(registerDto);
         
-        user.UserName = registerDto.Username.ToLower();
-        // user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
-        // user.PasswordSalt = hmac.Key;
-
         context.Users.Add(user);
         await context.SaveChangesAsync();
+
+        
+        if (user.UserName is null) return BadRequest("No username found for the user");
 
         return new UserDto
         {
@@ -47,13 +44,7 @@ public class AccountController(DataContext context, ITokenService tokenService, 
     {
         var user = await context.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.UserName == loginDto.Username.ToLower());
 
-        if (user is null) return Unauthorized("Invalid username");
-
-        // using var hmac = new HMACSHA512(user.PasswordSalt);
-
-        // var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(loginDto.Password));
-
-        // if(!HashIsValid(user.PasswordHash, computedHash)) return Unauthorized("Invalid password");
+        if (user is null || user.UserName is null) return Unauthorized("Invalid username");
 
         return new UserDto
         {
@@ -65,17 +56,8 @@ public class AccountController(DataContext context, ITokenService tokenService, 
         };
     }
 
-    private bool HashIsValid(byte[] expectedHash, byte[] actualHash)
-    {
-        for (int i = 0; i < expectedHash.Length; i++)
-        {
-            if (expectedHash[i] != actualHash[i]) return false;
-        }
-        return true;
-    }
-
     private async Task<bool> UserExists(string username)
     {
-        return await context.Users.AnyAsync(u => u.UserName.ToLower() == username.ToLower());
+        return await context.Users.AnyAsync(u => u.NormalizedUserName == username.ToUpper());
     }
 }
