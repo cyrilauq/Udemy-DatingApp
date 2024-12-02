@@ -14,6 +14,13 @@ namespace API.Controllers;
 [Authorize]
 public class UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService<ImageUploadResult, DeletionResult> photoService) : BaseApiController
 {
+    [Authorize(Roles = "Admin")]
+    [HttpGet("admin_route")]
+    public ActionResult<string> AdminEndPoint()
+    {
+        return "You're an admin";
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
