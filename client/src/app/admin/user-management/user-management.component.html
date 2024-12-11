@@ -10,10 +10,12 @@
         <tbody>
             @for (user of users; track user.username) {
                 <tr>
-                    <td>{{user.username}}</td>
-                    <td>{{user.roles}}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.roles }}</td>
                     <td>
-                        <button class="btn btn-info">Edit roles</button>
+                        <button (click)="openRolesModal()" class="btn btn-info">
+                            Edit roles
+                        </button>
                     </td>
                 </tr>
             }
