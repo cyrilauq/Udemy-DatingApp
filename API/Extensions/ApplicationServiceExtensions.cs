@@ -36,6 +36,8 @@ public static class ApplicationServiceExtensions
         servicesCollection.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySetting"));
+
+        servicesCollection.AddSignalR();
         
         return servicesCollection;
     }
