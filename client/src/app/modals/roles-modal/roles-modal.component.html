@@ -9,8 +9,18 @@
 </div>
 <div class="modal-body">
     <ul>
-        @for (item of list; track $index) {
-            <li>{{ item }}</li>
+        @for (role of availableRoles; track $index) {
+            <div class="form-check">
+                <input
+                    type="checkbox"
+                    name="{{ role }}"
+                    id="{{ role }}"
+                    class="form-check-input"
+                    [checked]="roleIsCheck(role)"
+                    value="{{ role }}"
+                    (change)="updateChecked(role)"
+                    [disabled]="roleCanBeUpdated(role)" />
+            </div>
         }
     </ul>
 </div>
