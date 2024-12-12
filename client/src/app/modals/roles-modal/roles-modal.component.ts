@@ -14,12 +14,17 @@ export class RolesModalComponent {
     username = '';
     availableRoles: string[] = [];
     selectedRoles: string[] = [];
+    rolesUpdated = false;
 
     updateChecked(updateValue: string) {
         if (this.roleIsCheck(updateValue)) {
             this.selectedRoles = this.selectedRoles.filter(r => r !== updateValue);
         } else {
+            console.log("Role added");
+            
             this.selectedRoles.push(updateValue);
+            console.log(this.selectedRoles.length);
+            
         }
     }
 
@@ -29,5 +34,14 @@ export class RolesModalComponent {
 
     roleCanBeUpdated(role: string) {
         return role !== 'Admin' && this.username === 'admin';
+    }
+
+    hasSelectedRoles() {
+        return this.selectedRoles.length !== 0;
+    }
+
+    onSelectRoles() {
+        this.rolesUpdated = true;
+        this.bsModalRef.hide();
     }
 }

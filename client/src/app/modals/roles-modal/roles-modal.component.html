@@ -20,12 +20,17 @@
                     value="{{ role }}"
                     (change)="updateChecked(role)"
                     [disabled]="roleCanBeUpdated(role)" />
+                <label>{{role}}</label>
             </div>
         }
     </ul>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" (click)="bsModalRef.hide()">
-        Close
+    <button
+        type="button"
+        class="btn btn-success"
+        [disabled]="!hasSelectedRoles()"
+        (click)="onSelectRoles()">
+        Submit
     </button>
 </div>
