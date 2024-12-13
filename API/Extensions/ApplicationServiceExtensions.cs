@@ -4,6 +4,7 @@ using API.Data;
 using API.Helpers;
 using API.Interfaces;
 using API.Services;
+using API.SignalR;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,8 @@ public static class ApplicationServiceExtensions
         servicesCollection.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySetting"));
 
         servicesCollection.AddSignalR();
+
+        servicesCollection.AddSingleton<PresenceTracker>();
         
         return servicesCollection;
     }
