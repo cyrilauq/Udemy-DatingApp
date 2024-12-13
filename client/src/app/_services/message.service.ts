@@ -7,15 +7,44 @@ import {
     setHttpPaginationParams,
     setPaginationResultFromHttpResponse,
 } from './paginationHelper';
+import {
+    HubConnection,
+    HubConnectionBuilder,
+    HubConnectionState,
+} from '@microsoft/signalr';
+import { User } from '../_models/User';
 
 @Injectable({
     providedIn: 'root',
 })
 export class MessageService {
     private baseUrl = environment.apiUrl;
+    private hubUrl = environment.hubsUrl;
+    private hubConnection?: HubConnection;
+
     private http = inject(HttpClient);
 
     paginatedResult = signal<PaginatedResult<Message[]> | null>(null);
+    messageThread = signal<Message[]>([]);
+
+    createHubConnection(user: User, otherUsername: string) {
+        this.hubConnection = new HubConnectionBuilder()
+            .withUrl(`${this.hubUrl}message?user=${otherUsername}`, {
+                accessTokenFactory: () => user.token,
+            })
+            .withAutomaticReconnect()
+            .build();
+
+        this.hubConnection.start().catch(error => console.error(error));
+
+        this.hubConnection.on('ReceiveMessageThread', messages => this.messageThread.set(messages));
+    }
+
+    stopHubConnection() {
+        if (this.hubConnection?.state === HubConnectionState.Connected) {
+            this.hubConnection.stop().catch(error => console.error(error));
+        }
+    }
 
     getMessages(pageNumber: number, pageSize: number, container: string) {
         let params = setHttpPaginationParams(
@@ -46,10 +75,13 @@ export class MessageService {
     }
 
     sendMessage(username: string, content: string) {
-        return this.http.post<Message>(`${this.baseUrl}messages`, { recipientUsername: username, content });
+        return this.http.post<Message>(`${this.baseUrl}messages`, {
+            recipientUsername: username,
+            content,
+        });
     }
 
     deleteMessage(id: number) {
-        return this.http.delete(`${this.baseUrl}messages/${id}`)
+        return this.http.delete(`${this.baseUrl}messages/${id}`);
     }
 }
