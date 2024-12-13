@@ -31,6 +31,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<PresenceHub>("hubs/presence");
+app.MapHub<MessageHub>("hubs/message");
 
 //  Seeding and creating database
 using var scope = app.Services.CreateScope();
