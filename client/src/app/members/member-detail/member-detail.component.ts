@@ -10,6 +10,7 @@ import { DatePipe } from '@angular/common';
 import { MemberMessagesComponent } from '../member-messages/member-messages.component';
 import { Message } from '../../_models/message';
 import { MessageService } from '../../_services/message.service';
+import { PresenceService } from '../../_services/presence.service';
 
 @Component({
     selector: 'app-member-detail',
@@ -21,9 +22,9 @@ import { MessageService } from '../../_services/message.service';
 export class MemberDetailComponent implements OnInit {
     @ViewChild('memberTabs', { static: true }) memberTabs?: TabsetComponent;
 
-    private memberService = inject(MembersService);
     private messageService = inject(MessageService);
     private route = inject(ActivatedRoute); // Inject a service that will help us interact with the current route
+    presenceService = inject(PresenceService);
 
     member: Member = {} as Member;
     images: GalleryItem[] = [];
