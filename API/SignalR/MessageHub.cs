@@ -20,22 +20,25 @@ public class MessageHub(IMessageRepository messageRepository, IUserRepository us
 
         var groupName = GetGroupName(username!, otherUser!);
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        await AddToGroup(groupName);
 
         var messages = await messageRepository.GetMessageThread(username!, otherUser!);
         await Clients.Group(groupName).SendAsync("ReceiveMessageThread", messages);
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        return base.OnDisconnectedAsync(exception);
+        await RemoveFromMessageGroup();
+
+        await base.OnDisconnectedAsync(exception);
     }
 
     public async Task SendMessage(CreateMessageDto createMessageDto)
     {
-        var username = Context.User?.GetUsername() ?? throw new Exception("Could not get user");
+        var username = GetConnectedUsername() ?? throw new Exception("Could not get user");
         var recipientUsername = createMessageDto.RecipientUsername.ToLower();
 
-        if(username == recipientUsername)
+        if (username == recipientUsername)
         {
             throw new HubException("You can't send a message to yourself");
         }
@@ -43,15 +46,59 @@ public class MessageHub(IMessageRepository messageRepository, IUserRepository us
         var sender = await userRepository.GetUserByUsernameAsync(username);
         var recipient = await userRepository.GetUserByUsernameAsync(recipientUsername);
 
-        if(recipient == null || sender == null || recipient.UserName == null || sender.UserName == null) throw new HubException("Can' send a message at this time");
-        
+        if (recipient == null || sender == null || recipient.UserName == null || sender.UserName == null) throw new HubException("Can' send a message at this time");
+
         var message = CreateMessageFrom(sender, recipient, createMessageDto);
+
+        var groupName = GetGroupName(sender.UserName, recipient.UserName);
+        var group = await messageRepository.GetMessageGroup(groupName);
+
+        if(group != null && group.Connections.Any(c => c.Username == recipient.UserName))
+        {
+            message.DateRead = DateTime.UtcNow;
+        }
+
         messageRepository.AddMessage(message);
 
-        if(await messageRepository.SaveAllAsync())
+        if (await messageRepository.SaveAllAsync())
         {
-            var groupName = GetGroupName(sender.UserName, recipient.UserName);
             await Clients.Group(groupName).SendAsync("NewMessage", mapper.Map<MessageDto>(message));
+        }
+    }
+
+    private string? GetConnectedUsername()
+    {
+        return Context.User?.GetUsername();
+    }
+
+    private async Task<bool> AddToGroup(string groupName)
+    {
+        var username = GetConnectedUsername() ?? throw new Exception("Con't get username");
+        var group = await messageRepository.GetMessageGroup(groupName);
+        var connection = new Connection 
+        { 
+            ConnectionId = Context.ConnectionId,
+            Username = username
+        };
+
+        if(group == null)
+        {
+            group = new Group { Name = groupName };
+            messageRepository.AddGroup(group);
+        }
+
+        group.Connections.Add(connection);
+
+        return await messageRepository.SaveAllAsync();
+    }
+
+    private async Task RemoveFromMessageGroup()
+    {
+        var connection = await messageRepository.GetConnection(Context.ConnectionId);
+        if(connection != null)
+        {
+            messageRepository.RemoveConnection(connection);
+            await messageRepository.SaveAllAsync();
         }
     }
 
