@@ -20,7 +20,7 @@ import { User } from '../_models/User';
 export class MessageService {
     private baseUrl = environment.apiUrl;
     private hubUrl = environment.hubsUrl;
-    private hubConnection?: HubConnection;
+    hubConnection?: HubConnection;
 
     private http = inject(HttpClient);
 
