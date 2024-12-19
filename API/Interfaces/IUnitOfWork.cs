@@ -3,8 +3,8 @@ namespace API.Interfaces;
 public interface IUnitOfWork
 {
     IUserRepository UserRepository { get; }
-    IMessageRepository Messagerepository { get; }
-    ILikesRepository Likesrepository { get; }
+    IMessageRepository MessageRepository { get; }
+    ILikesRepository LikesRepository { get; }
 
     Task<bool> CompleteAsync();
     bool HasChanges();

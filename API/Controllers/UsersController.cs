@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUserRepository userRepository, IMapper mapper, IPhotoService<ImageUploadResult, DeletionResult> photoService) : BaseApiController
+public class UsersController(IUnitOfWork unitOfWork, IMapper mapper, IPhotoService<ImageUploadResult, DeletionResult> photoService) : BaseApiController
 {
     [Authorize(Roles = "Admin")]
     [HttpGet("admin_route")]
@@ -25,7 +25,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
         userParams.CurrentUsername = User.GetUsername();
-        var users = await userRepository.GetMembersAsync(userParams);
+        var users = await unitOfWork.UserRepository.GetMembersAsync(userParams);
 
         Response.AddPaginationHeader(users);
 
@@ -35,7 +35,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
     [HttpGet("{username}")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-        var user = await userRepository.GetMemberAsync(username);
+        var user = await unitOfWork.UserRepository.GetMemberAsync(username);
 
         if (user is null) return NotFound();
 
@@ -54,7 +54,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
         // This means it updates the "user" variable with the content of "memberUpdateDto"
         mapper.Map(memberUpdateDto, user);
 
-        return await userRepository.SaveAllAsync() ? NoContent() : BadRequest("Failed to update the user");
+        return await unitOfWork.CompleteAsync() ? NoContent() : BadRequest("Failed to update the user");
     }
 
     [HttpPost("add-photo")]
@@ -78,7 +78,7 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
 
         user.Photos.Add(photo);
 
-        return await userRepository.SaveAllAsync() ? CreatedAtAction(nameof(GetUser), new { username = user.UserName }, mapper.Map<PhotoDto>(photo)) : BadRequest("Problem adding photo");
+        return await unitOfWork.CompleteAsync() ? CreatedAtAction(nameof(GetUser), new { username = user.UserName }, mapper.Map<PhotoDto>(photo)) : BadRequest("Problem adding photo");
     }
 
     [HttpPut("set-main-photo/{photoId:int}")]
@@ -97,12 +97,12 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
         if (currentMain != null) currentMain.IsMain = false;
         photo.IsMain = true;
 
-        return await userRepository.SaveAllAsync() ? NoContent() : BadRequest("A problem occure while setting the main photo");
+        return await unitOfWork.CompleteAsync() ? NoContent() : BadRequest("A problem occure while setting the main photo");
     }
 
     private Task<AppUser?> GetConnectedUser()
     {
-        return userRepository.GetUserByUsernameAsync(User.GetUsername());
+        return unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
     }
 
     [HttpDelete("delete-photo/{photoId:int}")]
@@ -125,6 +125,6 @@ public class UsersController(IUserRepository userRepository, IMapper mapper, IPh
 
         user.Photos.Remove(photo);
 
-        return await userRepository.SaveAllAsync() ? Ok() : BadRequest("A problem occure while deleting the photo");
+        return await unitOfWork.CompleteAsync() ? Ok() : BadRequest("A problem occure while deleting the photo");
     }
 }

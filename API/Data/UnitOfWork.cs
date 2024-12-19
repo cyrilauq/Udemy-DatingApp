@@ -6,9 +6,9 @@ public class UnitOfWork(DataContext context, IUserRepository userRepository, IMe
 {
     public IUserRepository UserRepository => userRepository;
 
-    public IMessageRepository Messagerepository => messagerepository;
+    public IMessageRepository MessageRepository => messagerepository;
 
-    public ILikesRepository Likesrepository => likesrepository;
+    public ILikesRepository LikesRepository => likesrepository;
 
     public async Task<bool> CompleteAsync()
     {

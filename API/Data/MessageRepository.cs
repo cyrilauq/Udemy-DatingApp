@@ -85,7 +85,6 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
         if(unreadMessages.Any())
         {
             unreadMessages.ForEach(m => m.DateRead = DateTime.UtcNow);
-            await context.SaveChangesAsync();
         }
         
         return messages;
