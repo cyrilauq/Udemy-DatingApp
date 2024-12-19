@@ -65,9 +65,4 @@ public class LikesRepository(DataContext context, IMapper mapper) : ILikesReposi
             likesParams.PageSize
         );
     }
-
-    public async Task<bool> SaveChanges()
-    {
-        return await context.SaveChangesAsync() > 0;
-    }
 }
