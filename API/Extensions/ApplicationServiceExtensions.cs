@@ -20,7 +20,7 @@ public static class ApplicationServiceExtensions
 
         servicesCollection.AddDbContext<DataContext>(options =>
         {
-            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         });
 
         servicesCollection.AddCors();
